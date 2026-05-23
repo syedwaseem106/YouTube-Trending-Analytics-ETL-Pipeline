@@ -1,38 +1,69 @@
-# YouTube Trending Analytics ETL Pipeline
+# YouTube Trending Analytics — ETL Pipeline
 
-An end-to-end, production-grade batch ETL (Extract, Transform, Load) pipeline that automates the ingestion, cleaning, transformation, and storage of YouTube trending video statistics across multiple global regions. 
+An end-to-end, production-grade batch ETL pipeline that automates the ingestion, cleaning, transformation, and storage of YouTube trending video statistics across multiple global regions.
 
-This project is built using professional Data Engineering practices, including clean configuration files, structured logging, database schema definitions (PKs/FKs/Indices), SQLAlchemy integrations, containerization (Docker & pgAdmin), orchestrator scheduling (Airflow), and advanced analytics queries.
+Built using professional Data Engineering practices: structured logging, relational schema design (PKs / FKs / indices), SQLAlchemy ORM, Docker containerization, Apache Airflow orchestration, and advanced SQL analytics.
 
 ---
 
-## Project Architecture
+## Live Dashboard
+
+> ### 🔴 [View Interactive Dashboard →](https://claude.ai/public/artifacts/e9dba18b-d02a-499f-b46f-cadb57259f13)
+
+Real-time analytics built on pipeline output — views by region, engagement rates, top channels, category breakdown, and full pipeline execution trace.
+
+---
+
+## Pipeline Metrics
+
+| Metric | Value |
+|---|---|
+| Raw records ingested | 239,662 |
+| Cleaned records | 234,544 |
+| Data quality rate | 97.8% |
+| Regions processed | 6 (US · CA · GB · IN · DE · FR) |
+| Video categories parsed | 32 |
+| Parquet partitions | 6 (by region) |
+| Total pipeline runtime | 35.71 seconds |
+
+---
+
+## Architecture
 
 ```mermaid
 graph TD
-    A[Kaggle Dataset via kagglehub] -->|Ingest scripts/ingest.py| B[data/raw/ CSV & JSON]
-    B -->|Transform scripts/transform.py| C[data/processed/ Parquet]
-    C -->|Load scripts/load.py| D[(PostgreSQL Database)]
-    D -->|SQL Analytics sql/analytics_queries.sql| E[Analytics Results]
-    D -->|Reporting View sql/dashboard_view.sql| F[Power BI / Tableau Ready Dataset]
+    A[Kaggle Dataset via kagglehub] -->|scripts/ingest.py| B[data/raw/ — CSV & JSON]
+    B -->|scripts/transform.py| C[data/processed/ — Parquet]
+    C -->|scripts/load.py| D[(PostgreSQL Database)]
+    D -->|sql/analytics_queries.sql| E[Analytics Results]
+    D -->|sql/dashboard_view.sql| F[Power BI / Tableau Ready]
 ```
 
-1. **Ingest (`ingest.py`)**: Downloads daily trending data dynamically from Kaggle using `kagglehub` and stages the raw CSV and JSON category metadata in the `data/raw` landing zone.
-2. **Transform (`transform.py`)**: Loads, standardizes, deduplicates, cleanses null values, handles multi-encoding character sets, performs data quality checks, and generates derived analytical columns (e.g., engagement rates, publish hours). Saves the refined data as partitioned Parquet files (`data/processed`) to optimize queries and save storage.
-3. **Load (`load.py`)**: Establishes database connections with back-off retry logic, declares relational schemas (tables, constraints, indexes), automatically creates the database and tables in PostgreSQL, and bulk-inserts the records.
-4. **Orchestrate (`run_pipeline.py`)**: Controls the sequential execution of Ingest -> Transform -> Load and logs execution stats.
+### How each layer works
+
+**Ingest (`ingest.py`)** — Downloads daily trending data dynamically from Kaggle using `kagglehub` and stages raw CSV and JSON category metadata in the `data/raw` landing zone.
+
+**Transform (`transform.py`)** — Loads, standardizes, deduplicates, cleanses null values, handles multi-encoding character sets, performs data quality checks, and engineers derived analytical columns (`engagement_rate`, `publish_hour`, `trending_day`). Saves output as partitioned Parquet files to optimize downstream queries.
+
+**Load (`load.py`)** — Establishes database connections with back-off retry logic, declares relational schemas (tables, constraints, indexes), auto-creates tables in PostgreSQL, and bulk-inserts records.
+
+**Orchestrate (`run_pipeline.py`)** — Controls sequential Ingest → Transform → Load execution with full logging of execution stats.
 
 ---
 
 ## Tech Stack
-*   **Language**: Python 3.9+
-*   **Data Processing**: Pandas, NumPy
-*   **Storage Formats**: Parquet (via PyArrow)
-*   **Database**: PostgreSQL
-*   **ORM / DB Driver**: SQLAlchemy, Psycopg2-binary
-*   **Containerization**: Docker, Docker Compose
-*   **Workflow Orchestration**: Apache Airflow
-*   **Querying**: SQL (PostgreSQL DDL & DML)
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.9+ |
+| Data processing | Pandas, NumPy |
+| Storage format | Parquet (PyArrow) — partitioned by region |
+| Database | PostgreSQL |
+| ORM / driver | SQLAlchemy, Psycopg2-binary |
+| Containerization | Docker, Docker Compose |
+| Orchestration | Apache Airflow |
+| Analytics | SQL (PostgreSQL DDL & DML) |
+| Visualization | Power BI / Tableau |
 
 ---
 
@@ -42,110 +73,166 @@ graph TD
 DE Projects/
 │
 ├── config/
-│   └── config.yaml             # Configurations for directories, DB credentials, regions
+│   └── config.yaml              # DB credentials, regions, directories
 │
 ├── data/
-│   ├── raw/                    # Raw landing zone (CSVs & JSONs copied from Kaggle)
-│   └── processed/              # Processed partitioned Parquet files
+│   ├── raw/                     # Raw landing zone — CSVs & JSONs from Kaggle
+│   └── processed/               # Cleaned partitioned Parquet files
 │
 ├── scripts/
-│   ├── __init__.py             # Makes scripts folder a python package
-│   ├── utils.py                # Logger setup, config loader, and DB connector with retry
-│   ├── ingest.py               # Ingestion phase script (kagglehub dataset download)
-│   ├── transform.py            # Transformation phase script (cleaning, feature engineering)
-│   ├── load.py                 # Load phase script (SQLAlchemy schema generation & bulk load)
-│   └── run_pipeline.py         # Main execution script (ETL Orchestrator)
+│   ├── utils.py                 # Logger, config loader, DB connector with retry
+│   ├── ingest.py                # Ingestion phase — kagglehub download
+│   ├── transform.py             # Transformation phase — cleaning & feature engineering
+│   ├── load.py                  # Load phase — SQLAlchemy schema & bulk insert
+│   └── run_pipeline.py          # Main orchestrator — Ingest → Transform → Load
 │
 ├── sql/
-│   ├── schema.sql              # Database table schema DDL (for reference)
-│   ├── analytics_queries.sql   # The five analytical queries (e.g., top channels, categories)
-│   └── dashboard_view.sql      # View creation DDL for BI reporting
+│   ├── schema.sql               # Table DDL with PKs, FKs, and indices
+│   ├── analytics_queries.sql    # 5 analytical queries
+│   └── dashboard_view.sql       # BI-ready view DDL
 │
 ├── dashboard/
-│   └── dashboard_data.csv      # Exported BI-ready dataset (PostgreSQL view export)
+│   └── dashboard_data.csv       # Exported BI-ready dataset
 │
 ├── docker/
-│   ├── docker-compose.yml      # Local DB & pgAdmin container orchestration
-│   └── Dockerfile              # Dockerfile for containerizing the ETL pipeline
+│   ├── docker-compose.yml       # PostgreSQL + pgAdmin containers
+│   └── Dockerfile               # ETL pipeline containerization
 │
 ├── airflow/
 │   └── dags/
-│       └── youtube_etl_dag.py  # Apache Airflow DAG to run pipeline daily
+│       └── youtube_etl_dag.py   # Airflow DAG — daily scheduled pipeline
 │
-├── requirements.txt            # Python dependencies
-├── README.md                   # Setup guide and DE Resume write-up
-└── .gitignore                  # Git exclude configurations
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
 ---
 
-## Local Setup & Quickstart
+## Getting Started
 
 ### Prerequisites
-*   Python 3.9+ installed
-*   Docker Desktop running (optional, but highly recommended for PostgreSQL)
+- Python 3.9+ installed
+- Docker Desktop running (recommended)
 
-### 1. Clone the Project & Install Dependencies
-Navigate to the directory and run:
+### 1. Clone & install dependencies
 ```bash
-# Upgrade pip to ensure pre-compiled wheels are fetched
 python -m pip install --upgrade pip
-
-# Install dependencies using pre-compiled binary packages
 pip install --only-binary :all: -r requirements.txt
 ```
 
-### 2. Start PostgreSQL Database
-If you have Docker, start the database and pgAdmin containers with:
+### 2. Start PostgreSQL via Docker
 ```bash
 docker-compose -f docker/docker-compose.yml up -d
 ```
-*This starts a PostgreSQL instance at `localhost:5432` and pgAdmin at `http://localhost:8080` (credentials: `admin@admin.com` / `admin`).*
+> Starts PostgreSQL at `localhost:5432` and pgAdmin at `http://localhost:8080`
+> Default credentials: `admin@admin.com` / `admin`
 
-*(If running Postgres locally outside Docker, update the credentials in [config.yaml](file:///c:/Users/Syed%20Waseem/OneDrive/Desktop/DE%20Projects/config/config.yaml).)*
-
-### 3. Run the ETL Pipeline
-To execute the ingestion, transformation, and database load in one run:
+### 3. Run the full ETL pipeline
 ```bash
 python scripts/run_pipeline.py
 ```
-Check progress in the terminal or monitor detailed run messages in `logs/pipeline.log`.
+> Monitor progress in terminal or in `logs/pipeline.log`
 
 ---
 
 ## SQL Analytics & Insights
 
-The analytical queries are stored in [sql/analytics_queries.sql](file:///c:/Users/Syed%20Waseem/OneDrive/Desktop/DE%20Projects/sql/analytics_queries.sql).
-You can run them in pgAdmin or any SQL client to see insights:
-1.  **Top 3 Categories per Region**: Evaluates which categories drive the most engagement globally.
-2.  **Top 10 Channels by Cumulative Likes**: Lists the channels producing the most liked videos.
-3.  **Regional Performance Comparison**: Computes aggregate views and likes-to-dislikes ratios.
-4.  **Top 10 Highly Engaged Videos**: Determines which videos have the highest interaction rate (likes+dislikes+comments) relative to their views.
-5.  **Daily Trending Patterns**: Reveals which day of the week generates the highest number of trending videos.
+Queries live in `sql/analytics_queries.sql` — run in pgAdmin or any SQL client:
+
+1. **Top 3 categories per region** — which categories drive the most engagement globally
+2. **Top 10 channels by cumulative likes** — highest-performing channels across all regions
+3. **Regional performance comparison** — aggregate views and likes-to-dislikes ratios
+4. **Top 10 highly engaged videos** — highest interaction rate relative to views
+5. **Daily trending patterns** — which day of the week generates the most trending videos
+
+### Sample query
+```sql
+SELECT region,
+       SUM(views)                              AS total_views,
+       ROUND(AVG(engagement_rate)::numeric, 4) AS avg_engagement
+FROM youtube_trending_statistics
+GROUP BY region
+ORDER BY total_views DESC;
+```
 
 ---
 
-## Dockerizing the ETL Pipeline
-To containerize the Python scripts and execute the ETL pipeline inside a clean, isolated environment:
-1.  Build the Docker image:
-    ```bash
-    docker build -t youtube-etl-pipeline -f docker/Dockerfile .
-    ```
-2.  Run the ETL container (sharing the docker database network):
-    ```bash
-    docker run --network de_network youtube-etl-pipeline
-    ```
+## Docker — Containerized Pipeline
+
+Build and run the ETL pipeline in an isolated container:
+
+```bash
+# Build image
+docker build -t youtube-etl-pipeline -f docker/Dockerfile .
+
+# Run against the DB network
+docker run --network de_network youtube-etl-pipeline
+```
 
 ---
 
-## Resume-Ready Project Description
-You can add this project description directly to your resume for **Associate / Junior Data Engineer** roles:
+## Database Schema
 
-> **YouTube Trending Analytics ETL Pipeline | Python, Pandas, PostgreSQL, SQLAlchemy, Parquet, Docker, Airflow**
-> *   Designed and implemented an automated batch ETL pipeline to ingest, clean, and analyze daily trending YouTube video statistics (100k+ rows) across multiple global regions.
-> *   Automated ingestion of raw regional datasets (CSV/JSON) using `kagglehub` and staging files in a local raw layer.
-> *   Developed robust data preprocessing scripts in Pandas, standardizing columns, applying schema validation, handling multi-encoding issues, and generating derived KPIs like engagement rate and publish time analytics.
-> *   Saved cleaned datasets to a processed layer as partitioned **Parquet** files using `pyarrow`, optimizing disk storage and improving downstream load times.
-> *   Configured automatic database provisioning and schema generation in **PostgreSQL** using **SQLAlchemy** with custom retry connection mechanisms.
-> *   Designed a dimensional star schema, optimized indices for analytical queries, and created reporting-ready database views for **Tableau/Power BI** integrations.
-> *   Containerized the entire infrastructure using **Docker Compose** (Postgres + pgAdmin) and created an **Airflow DAG** to orchestrate daily ETL batch runs.
+**youtube_categories**
+| Column | Type |
+|---|---|
+| category_id | INT (PK) |
+| category_title | VARCHAR |
+
+**youtube_trending_statistics**
+| Column | Type |
+|---|---|
+| video_id | VARCHAR (PK) |
+| trending_date | DATE |
+| region | VARCHAR (FK) |
+| title | VARCHAR |
+| channel_title | VARCHAR |
+| category_id | INT (FK) |
+| publish_time | TIMESTAMP |
+| views | BIGINT |
+| likes | BIGINT |
+| dislikes | BIGINT |
+| comment_count | BIGINT |
+| engagement_rate | DOUBLE PRECISION |
+| trending_day | VARCHAR |
+| publish_hour | INT |
+
+---
+
+## Key Insights
+
+**Top categories by region**
+- Music and Entertainment dominated across most regions
+- GB Music category generated 170B+ total views
+- France uniquely showed Sports among top-performing categories
+
+**Most liked channels**
+- PewDiePie — 17.6M+ likes
+- SMTOWN — 13.3M+ likes
+- Amit Bhadana ranked among top global channels
+
+**Regional highlights**
+- GB led total views despite fewer unique videos
+- France achieved the highest engagement rate (5.8%)
+- Germany had the highest count of unique trending videos
+
+---
+
+## Planned Enhancements
+
+- [ ] AWS S3 as centralized data lake layer (raw + processed)
+- [ ] Redshift or Snowflake as cloud warehouse
+- [ ] Incremental data loading (delta processing)
+- [ ] Data quality checks with Great Expectations
+- [ ] dbt transformation layer with lineage and tests
+- [ ] Kafka streaming pipeline for real-time ingestion
+- [ ] CI/CD pipeline for automated testing and deployment
+
+---
+
+## Author
+
+**Syed Waseem**  
+[LinkedIn](https://linkedin.com/in/syed-waseemi) · [GitHub](https://github.com/syed)  
+AWS Certified Data Engineer Associate (DEA-C01)
