@@ -1,0 +1,17 @@
+# Local data directories
+data/
+logs/
+dashboard/dashboard_data.csv
+dashboard/dashboard_data.parquet
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.env
+
+# IDEs
+.vscode/
+.idea/

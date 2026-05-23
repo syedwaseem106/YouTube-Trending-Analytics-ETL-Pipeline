@@ -1,0 +1,30 @@
+# YouTube Trending Analytics ETL Pipeline Configuration
+
+# Data storage paths (relative to project root)
+raw_data_dir: "data/raw"
+processed_data_dir: "data/processed"
+log_dir: "logs"
+
+# Kaggle dataset details
+kaggle_dataset: "datasnaek/youtube-new"
+
+# Regions to process (CSVs for these regions will be loaded and joined)
+# Available regions in dataset: US, CA, GB, FR, DE, IN, JP, KR, MX, RU
+regions:
+  - "US"
+  - "CA"
+  - "GB"
+  - "IN"
+  - "DE"
+  - "FR"
+
+# Database Configuration (PostgreSQL)
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  dbname: "youtube_trending"
+
+# General pipeline settings
+log_level: "INFO"
