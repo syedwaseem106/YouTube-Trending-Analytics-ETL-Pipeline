@@ -9,6 +9,7 @@ Built using professional Data Engineering practices: structured logging, relatio
 ## Live Dashboard
 
 > ### 🔴 [View Interactive Dashboard →](https://claude.ai/public/artifacts/e9dba18b-d02a-499f-b46f-cadb57259f13)
+![Uploading image.png…]()
 
 Real-time analytics built on pipeline output — views by region, engagement rates, top channels, category breakdown, and full pipeline execution trace.
 
