@@ -1,0 +1,2 @@
+# YouTube Trending Analytics ETL Pipeline
+Designed and implemented an end-to-end YouTube Trending Analytics ETL Pipeline using Python, PostgreSQL, and Parquet to process 239K+ records across multiple regions. Built modular ingestion, transformation, validation, and analytics workflows with partitioned storage, SQL reporting, Dockerized PostgreSQL integration, and dashboard-ready datasets for scalable batch data processing.
