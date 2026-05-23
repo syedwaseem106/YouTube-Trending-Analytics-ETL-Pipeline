@@ -1,3 +1,4 @@
+
 # YouTube Trending Analytics — ETL Pipeline
 
 An end-to-end, production-grade batch ETL pipeline that automates the ingestion, cleaning, transformation, and storage of YouTube trending video statistics across multiple global regions.
@@ -9,7 +10,7 @@ Built using professional Data Engineering practices: structured logging, relatio
 ## Live Dashboard
 
 > ### 🔴 [View Interactive Dashboard →](https://claude.ai/public/artifacts/e9dba18b-d02a-499f-b46f-cadb57259f13)
- Image: ![Uploading image.png…]()
+ Image: <img width="1877" height="847" alt="Screenshot 2026-05-23 220259" src="https://github.com/user-attachments/assets/0c25568a-e957-4a1c-9fcc-d74a1098289d" />
 
 Real-time analytics built on pipeline output — views by region, engagement rates, top channels, category breakdown, and full pipeline execution trace.
 
